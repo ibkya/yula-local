@@ -1,16 +1,13 @@
-node_modules/
-.venv/
-.venv-win/
-dist/
-.build/
+# Python
 __pycache__/
-captures/
-test-captures/
-automation-state.json
-automation-state.lock
-automation-status.json
-automation-status.tmp
+.venv*/
+
+# Build output
+.build/
+dist/
+
+# OCR language data (downloaded during setup)
 .tessdata/
-automation-control.json
-automation-control.tmp
-kontrol-ekran.png
+
+# Run-time files: tour progress, live status, screen checks
+data/

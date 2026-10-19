@@ -3,3 +3,5 @@ Pillow>=10.4,<13
 pyobjc-core==11.1
 pyobjc-framework-Cocoa==11.1
 pyobjc-framework-Quartz==11.1
+# Optional: lets macOS try the Windows OCR path (--ocr tesseract).
+pytesseract==0.3.13

@@ -1,5 +1,4 @@
 """Download OCR language data from the official, versioned tessdata repository."""
-from pathlib import Path
 import sys
 import urllib.request
 
@@ -7,7 +6,7 @@ import urllib.request
 def main():
     if sys.platform != 'win32':
         raise RuntimeError('Bu kurulum yalnızca Windows içindir.')
-    target = Path(__file__).resolve().parent.parent / '.tessdata'
+    from paths import TESSDATA as target
     target.mkdir(exist_ok=True)
     for language in ('tur', 'eng'):
         file = target / (language + '.traineddata')
@@ -24,7 +23,7 @@ def main():
         temporary.replace(file)
     from desktop import tesseract_setup
     tesseract_setup()
-    import tkinter
+    import tkinter  # noqa: F401  (the panel needs it; fail setup early if missing)
     print('Python, OCR, Türkçe/İngilizce ve durum penceresi hazır.')
 
 

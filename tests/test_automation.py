@@ -1,12 +1,16 @@
 import copy
 import json
+import os
 from pathlib import Path
 import sys
 import unittest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'automation'))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'app'))
 from core import Engine, Screen
 from desktop import crop_window, tesseract_words
+
+# Private screen captures stay outside the project (they show account details).
+CAPTURES = Path(os.environ.get('YULA_CAPTURES', Path.home() / 'Desktop/yula-arsiv/test-captures'))
 
 
 def word(text, x, y, w=.025):
@@ -311,7 +315,7 @@ class FlowTests(unittest.TestCase):
 
 class LocalCaptureTests(unittest.TestCase):
     def test_resized_and_scrolled_recordings(self):
-        root = Path(__file__).resolve().parents[1] / 'test-captures'
+        root = CAPTURES
         expected = {'list': list(range(1, 8)), 'scrolled': list(range(11, 18))}
         for prefix, indices in expected.items():
             for width in (1366, 1920, 2560):
@@ -322,7 +326,7 @@ class LocalCaptureTests(unittest.TestCase):
                 self.assertEqual([r['index'] for r in screen.rows()], indices, (prefix, width))
 
     def test_real_captures_when_available(self):
-        root = Path(__file__).resolve().parents[1] / 'test-captures'
+        root = CAPTURES
         if not (root / 'favorites-2x.json').exists():
             self.skipTest('Yerel ekran kayıtları paylaşılmaz; bu makinede mevcut değil.')
         favorites_screen = Screen(json.loads((root / 'favorites-2x.json').read_text()))
@@ -334,6 +338,28 @@ class LocalCaptureTests(unittest.TestCase):
             self.assertEqual(engine.step(screen).kind, 'click')
         captcha = Screen(json.loads((root / 'captcha.json').read_text()))
         self.assertEqual(engine.step(captcha).kind, 'wait')
+
+
+class PanelTests(unittest.TestCase):
+    def test_tour_choice(self):
+        from panel import tour_choice
+        self.assertEqual(tour_choice(None), 'new')
+        self.assertEqual(tour_choice({'next': 201, 'end': 200, 'phase': 'list'}), 'new')
+        self.assertEqual(tour_choice({'next': 7, 'end': 200, 'phase': 'list'}), 'resume')
+        self.assertEqual(tour_choice({'next': 7, 'end': 200, 'phase': 'pending'}), 'pending')
+
+    def test_check_summary(self):
+        from panel import check_summary
+        output = 'Chrome ön planda değil; bekliyor.\n' + json.dumps(
+            {'screen': 'favorites', 'captcha': False, 'target': None, 'total': None,
+             'rows': [{'index': 1, 'coords': [599, 188], 'moving': 0},
+                      {'index': 2, 'coords': [600, 201], 'moving': 0}]}, indent=2)
+        ok, text = check_summary(output + '\nOkunan ekran kaydedildi.')
+        self.assertTrue(ok)
+        self.assertIn('1–2', text)
+        self.assertFalse(check_summary(json.dumps({'screen': 'unknown', 'captcha': False}))[0])
+        self.assertIn('CAPTCHA', check_summary(json.dumps({'screen': 'captcha', 'captcha': True}))[1])
+        self.assertFalse(check_summary('Güvenli duruş: hata')[0])
 
 
 class PlatformTests(unittest.TestCase):

@@ -2,8 +2,11 @@
 setlocal
 chcp 65001 >nul
 cd /d "%~dp0"
-echo Yula kurulumu: Python 3.12, Tesseract ve Turkce/Ingilizce OCR.
-echo Internet gerekli. Windows izin veya lisans sorarsa ekranda inceleyip devam edin.
+echo ============================================================
+echo  YULA KURULUMU
+echo  Python 3.12, Tesseract OCR ve Turkce/Ingilizce dil dosyalari kurulacak.
+echo  Internet gerekli. Windows izin veya lisans sorarsa "Evet" / "Y" ile devam et.
+echo ============================================================
 set "YULA_PY=%LOCALAPPDATA%\Programs\Python\Python312\python.exe"
 if exist "%YULA_PY%" goto python_ready
 if exist "%ProgramFiles%\Python312\python.exe" (
@@ -34,7 +37,7 @@ goto packages
 "%YULA_PY%" -m venv .venv-win
 if errorlevel 1 goto fail
 :packages
-".venv-win\Scripts\python.exe" -m pip install -r automation\requirements-windows.txt
+".venv-win\Scripts\python.exe" -m pip install -r app\requirements-windows.txt
 if errorlevel 1 goto fail
 if exist "%ProgramFiles%\Tesseract-OCR\tesseract.exe" goto languages
 if exist "%LOCALAPPDATA%\Programs\Tesseract-OCR\tesseract.exe" goto languages
@@ -45,14 +48,17 @@ if errorlevel 1 goto no_winget
 winget install --id tesseract-ocr.tesseract --exact --source winget
 if errorlevel 1 goto fail
 :languages
-".venv-win\Scripts\python.exe" automation\windows_setup.py
+".venv-win\Scripts\python.exe" app\windows_setup.py
 if errorlevel 1 goto fail
-echo Kurulum tamamlandi.
+rem Masaustune "Yula" kisayolu: paneli acar.
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$s=(New-Object -ComObject WScript.Shell).CreateShortcut([Environment]::GetFolderPath('Desktop')+'\Yula.lnk'); $s.TargetPath='%~dp0Yula.bat'; $s.WorkingDirectory='%~dp0'; $s.WindowStyle=7; $s.IconLocation='%~dp0.venv-win\Scripts\pythonw.exe,0'; $s.Save()" >nul 2>&1
+echo.
+echo KURULUM TAMAMLANDI. Masaustundeki "Yula" kisayolu ile paneli acabilirsin.
 if /i not "%~1"=="auto" pause
 exit /b 0
 :no_winget
 echo Windows App Installer / winget bulunamadi. Microsoft Store'dan App Installer kurun.
-echo Sonra ayni dosyayi tekrar acin. Ayrinti: WINDOWS-KURULUM.md
+echo Sonra ayni dosyayi tekrar acin. Ayrinti: TESLIM.pdf, "Sorun cikarsa" bolumu.
 :fail
 echo KURULUM TAMAMLANMADI. Yukaridaki hata giderilmeden gonderim baslatilmayacak.
 pause

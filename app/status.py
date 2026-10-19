@@ -1,16 +1,17 @@
 """Local, read-only run status. Contains no account information."""
 import json
 import os
-from pathlib import Path
 import time
+import uuid
 
-PATH = Path(__file__).resolve().parent.parent / 'automation-status.json'
-CONTROL = PATH.with_name('automation-control.json')
+from paths import STATUS as PATH
 
 
 class Reporter:
-    def __init__(self):
-        self.data = {'pid': os.getpid(), 'started': time.time()}
+    def __init__(self, run_id=None):
+        # The run id, not the pid, identifies a run: on Windows a venv python.exe
+        # starts the real interpreter as a child process with another pid.
+        self.data = {'run': run_id or uuid.uuid4().hex, 'pid': os.getpid(), 'started': time.time()}
 
     def update(self, phase, message, state=None, sends=None):
         self.data.update(phase=phase, message=message, updated=time.time())

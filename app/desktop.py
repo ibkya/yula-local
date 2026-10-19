@@ -8,8 +8,7 @@ import shutil
 import subprocess
 import sys
 
-ROOT = Path(__file__).resolve().parent.parent
-VISION = ROOT / '.build/yula-vision'
+from paths import TESSDATA, VISION
 
 
 def enable_dpi():
@@ -90,7 +89,7 @@ def lock_file(file):
 
 def tesseract_setup():
     import pytesseract
-    local_data = ROOT / '.tessdata'
+    local_data = TESSDATA
     if all((local_data / (lang + '.traineddata')).exists() for lang in ('tur', 'eng')):
         os.environ['TESSDATA_PREFIX'] = str(local_data)
     executable = shutil.which('tesseract')
