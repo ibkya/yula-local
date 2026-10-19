@@ -40,7 +40,7 @@ Bu test Windows'un OCR katmanını doğrular; Windows'un pencere/fare/DPI katman
 
 ## 20 Ekim 2026 — Düzenleme ve panel
 
-Proje klasörlere ayrıldı (app, windows, mac, tests, tools, docs); ekran okuma `app/ocr.py`'ye taşındı. Düzenleme öncesi ve sonrası 17 gerçek kayıt × 2 OCR motoru (34 sonuç) birebir aynı. Komut dosyalarının yerini Tkinter paneli aldı: kurulum kontrolü, gönderimsiz ekran testi, başlat/devam/durdur, belirsiz gönderimi kullanıcıya sorma, canlı durum, CAPTCHA sesi. Panel botu alt işlem olarak çalıştırır; durum ve durdurma isteği çalıştırma kimliğiyle eşleşir (Windows'ta venv python.exe gerçek yorumlayıcıyı ayrı PID ile başlatır). Panel macOS'ta açılıp görüntülendi; Windows'ta henüz açılmadı.
+Proje klasörlere ayrıldı (app, windows, mac, tests, tools, docs); ekran okuma `app/ocr.py`'ye taşındı. Düzenleme öncesi ve sonrası 17 gerçek kayıt × 2 OCR motoru (34 sonuç) birebir aynı. Komut dosyalarının yerini Tkinter paneli aldı: kurulum kontrolü, gönderimsiz ekran testi, başlat/devam/durdur, belirsiz gönderimi kullanıcıya sorma, canlı durum, CAPTCHA sesi. Panel botu alt işlem olarak çalıştırır; durum ve durdurma isteği çalıştırma kimliğiyle eşleşir (Windows'ta venv python.exe gerçek yorumlayıcıyı ayrı PID ile başlatır). Panel macOS'ta canlı denendi: "Ekranı test et" 1–7 numaralı köyleri ve koordinatları doğru gösterdi; "Başlat" kayıtlı turu (7. köy) sordu, devam seçilince 7 ve 8'e gönderim yapıldı ve doğrulandı; "Durdur" botu birkaç saniyede durdurdu, kayıt 9. köyde korundu. Bu denemede bulunan üç kusur düzeltildi (bot kayıt satırları görünmüyordu, ekran testinden sonra yanlış durum gösteriliyordu, panel tarayıcının arkasında açılıyordu). Windows'ta henüz açılmadı.
 
 ## Henüz doğrulanmayanlar — teslimden önce gerekli
 

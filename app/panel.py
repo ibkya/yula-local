@@ -88,6 +88,9 @@ class Panel:
         self.root = root
         self.process = None
         self.run_id = None
+        self.live_run_id = None     # status.json is shown only for the live run, not a screen check
+        self.in_json = False
+        self.setup_error = None
         self.mode = None            # 'check' or 'live' while a runner is active
         self.output = []
         self.lines = queue.Queue()
@@ -98,6 +101,10 @@ class Panel:
         root.protocol('WM_DELETE_WINDOW', self.close)
         self.build()
         threading.Thread(target=self.check_setup, daemon=True).start()
+        root.lift()
+        root.attributes('-topmost', True)
+        root.after(400, lambda: root.attributes('-topmost', False))
+        root.focus_force()
         self.refresh()
 
     # ---------- layout ----------
@@ -176,7 +183,9 @@ class Panel:
         self.process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                         text=True, encoding='utf-8', errors='replace',
                                         cwd=str(APP.parent), env=environment, creationflags=flags)
-        self.mode, self.output = mode, []
+        self.mode, self.output, self.in_json = mode, [], False
+        if mode == 'live':
+            self.live_run_id = self.run_id
         threading.Thread(target=self.read_output, args=(self.process,), daemon=True).start()
         self.set_running(True)
         self.write_log(f"--- {datetime.now():%H:%M:%S} {'Ekran testi' if mode == 'check' else 'Tur'} başladı ---")
@@ -278,9 +287,14 @@ class Panel:
             kind, value = self.lines.get()
             if kind == 'line':
                 self.output.append(value)
-                if not value.lstrip().startswith(('{', '}', '"', '[', ']')):
+                if self.mode == 'check' and value.startswith('{'):
+                    self.in_json = True
+                if not self.in_json:
                     self.write_log(value)
+                if self.in_json and value.startswith('}'):
+                    self.in_json = False
             elif kind == 'setup':
+                self.setup_error = value
                 if value:
                     self.heading.configure(text='KURULUM EKSİK', fg='#b02323')
                     self.message.configure(text=value)
@@ -308,17 +322,26 @@ class Panel:
             self.write_log(f'--- Bot durdu ({datetime.now():%H:%M:%S}) ---')
 
     def show_status(self):
+        if self.setup_error:
+            return  # Keep the setup message until the user fixes it and reopens the panel.
         data = load_json(STATUS)
         running = self.process is not None and self.process.poll() is None
-        if not data and not running:
+        if data and data.get('run') != self.live_run_id:
+            data = None  # A screen check or an older session: describe the saved tour instead.
+        if not data:
+            if running:
+                return
+            self.heading.configure(text='HAZIR', fg='#245e9c')
+            self.stamp.configure(text='')
             state = load_json(STATE)
             if state and tour_choice(state) != 'new':
                 self.counts.configure(text=f"Kayıtlı tur: {state['next']}. köyde kaldı ({state['next']}/{state['end']})\n"
                                            f"Bu turda tamamlanan: {len(state.get('completed', []))}"
                                            f" • atlanan: {len(state.get('skipped', []))}")
                 self.message.configure(text='Başlat’a basınca kaldığı yerden devam etmeyi önerir.')
-            return
-        if not data or (running and data.get('run') != self.run_id):
+            else:
+                self.counts.configure(text='Kayıtlı tur yok; Başlat yeni tur açar.')
+                self.message.configure(text='')
             return
         title, color, message = display_status(data)
         if not running and data.get('phase') not in ('stopped', 'error'):

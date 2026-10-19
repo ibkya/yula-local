@@ -100,7 +100,7 @@ def main():
         reporter.update('starting', 'Tarayıcıya geçmek için 8 saniye.', engine.state, sends)
         def finish_status():
             if reporter.data['phase'] not in ('stopped', 'error'):
-                reporter.update('stopped', 'İşlem sonlandı; ayrıntı için terminali kontrol et.')
+                reporter.update('stopped', 'İşlem sonlandı; ayrıntı için kayda bak.')
         atexit.register(finish_status)
         global active_reporter
         active_reporter = reporter
