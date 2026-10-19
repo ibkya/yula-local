@@ -1,0 +1,16 @@
+node_modules/
+.venv/
+.venv-win/
+dist/
+.build/
+__pycache__/
+captures/
+test-captures/
+automation-state.json
+automation-state.lock
+automation-status.json
+automation-status.tmp
+.tessdata/
+automation-control.json
+automation-control.tmp
+kontrol-ekran.png
